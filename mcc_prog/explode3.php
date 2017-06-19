@@ -24,25 +24,15 @@ function mode() {
 			$('#val_3').html(arr_values[2]);
 			$('#val_4').html(arr_values[3]);
         }
-		
-		
     });
-
-	
 	}
-
-
-
-var timeInterval = 300;
-setInterval(mode, timeInterval);
-
+	var timeInterval = 300;
+	setInterval(mode, timeInterval);
 
 </script>
-
 </head>
-
+	
 <body>
-
 <table border='1'>
 	<tr>
 		<td>Канал 0</td>
@@ -57,11 +47,5 @@ setInterval(mode, timeInterval);
 		<td id='val_4'></td>
 	</tr>
 </table>
- 
 </body>
-
 </html>
-
-
-
-
