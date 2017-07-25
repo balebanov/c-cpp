@@ -107,6 +107,7 @@ int main(){
 		char buff_three[10];
 		sprintf(buff_three, "%f;", voltage_three);
 		
+		//запись данных в файл
 		ssize_t wrt_pos0, wrt_pos1, wrt_pos2, wrt_pos3;
 		wrt_pos0 = pwrite(fd, buff_zero, sizeof(buff_zero), 0);
 		if(wrt_pos0 == (int )-1){
@@ -130,6 +131,7 @@ int main(){
 		}	
 		sleep(1);
 		
+		//обновление данных, установка курсора
 		off_t cursor;
 		size_t sumLen = strlen(buff_zero) + strlen(buff_one) + strlen(buff_two) + strlen(buff_three);
 		cursor = lseek(fd, 0, SEEK_CUR);
@@ -138,6 +140,7 @@ int main(){
 			break;
 		}
 		
+		//урезать данные
 		int ftr;
 		ftr = ftruncate(fd, (off_t )sumLen);
 		if(ftr == -1){
@@ -145,6 +148,7 @@ int main(){
 			break;
 		}
 	}
+	//закрыть файл
 	if(fclose(stream) == EOF) {
 		cerr << "Ошибка fclose()" << endl;
 		return 1;
