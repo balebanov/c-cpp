@@ -9,8 +9,8 @@ int mysql(const char query[])
 
 	char host[] = "127.0.0.1"; // хост
 	char user[] = "root"; // пользователь
-	char passwd[] = "hHrKip78"; // пароль
-	char db[] = "users"; // название базы данных
+	char passwd[] = "passwd"; // пароль
+	char db[] = "database"; // название базы данных
 	int port = 0; //  порт. Если порт у сервера MySQL не по умолчанию (3306), то нужно указывать конкретный номер порта
 
 	mysql_init(&mysql);  // Инициализация
