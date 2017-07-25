@@ -1,3 +1,7 @@
+/*
+Компилировать g++
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,8 +24,8 @@ int main(int argc, char**argv)
 {
   DeviceInfo_E1608 device_info;
   uint16_t value;
-  uint8_t channel = 0;
-  uint8_t range = 0;
+  uint8_t channel = 0; //канал 0
+  uint8_t range = 0; // +/- 10В
 
   device_info.device.connectCode = 0x0;   // default connect code
   device_info.device.frameID = 0;         // zero out the frameID
@@ -30,11 +34,11 @@ int main(int argc, char**argv)
   if (argc == 2) {
     printf("E-1608 IP address = %s\n", argv[1]);
     if (inet_aton(argv[1], &device_info.device.Address.sin_addr) == 0) {
-      printf("Improper destination address.\n");
+      printf("Improper destination address\n");
       return -1;
     }
   } else if (discoverDevice(&device_info.device, E1608_PID) <= 0) {
-    printf("No device found.\n");
+    printf("No device found\n");
     return -1;
   }
 
@@ -47,7 +51,6 @@ int main(int argc, char**argv)
   buildGainTableAIn_E1608(&device_info);
   buildGainTableAOut_E1608(&device_info);
 
-  while(1) {
     printf("\nE-1608 Testing\n");
     printf("----------------\n");
      
@@ -58,11 +61,9 @@ int main(int argc, char**argv)
 	  printf("Напряжение - %lf\n", Volts);
 	  char charVolts[sizeof(Volts)];
 	  memcpy(&charVolts, &Volts, sizeof(Volts));
-	  //sending = sendall(new_sock, charVolts, sizeof(charVolts), 0);
 	  sleep(1);	  
 	}
 	
-  }
   return 0;
 }
 
