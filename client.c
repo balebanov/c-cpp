@@ -24,7 +24,6 @@ int main(int argc, char const *argv[]) {
   int sock, conneting, sending;
   struct sockaddr_in addr;
   char msg[] = "Test\n";
-//  char buf[sizeof(msg)];
 
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock < 0){
@@ -48,8 +47,6 @@ int main(int argc, char const *argv[]) {
       printf("Успешная передача!\n");
     }
     sleep(1);
-    //  recv(sock, buf, sizeof(buf), 0);
-    //  printf("%s\n", buf);
   }
 
   close(sock);
