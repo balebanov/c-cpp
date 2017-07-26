@@ -22,7 +22,8 @@
 #define IP_DF 0x4000
 #define IP_MF 0x2000
 
-struct arphdr {
+struct arphdr
+ {
   unsigned short ar_hrd;		/* format of hardware address	*/
   unsigned short ar_pro;		/* format of protocol address	*/
   unsigned char	 ar_hln;		/* length of hardware address	*/
@@ -33,10 +34,8 @@ struct arphdr {
   unsigned char	 ar_tha[ETH_ALEN];	/* target hardware address	*/
   unsigned char	 ar_tip[4];		/* target IP address		*/
 };
-
-/*--------------------------------------------------*/
-/* Функция вывода полей заголовков принятых пакетов */
-/*--------------------------------------------------*/
+
+
 PrintHeaders(void *data)
 {
   struct ethhdr eth;
@@ -95,14 +94,17 @@ PrintHeaders(void *data)
 						       arp->ar_tip[0],
 						       arp->ar_tip[1],
 						       arp->ar_tip[2],
-						       arp->ar_tip[3]); 
-      printf("#############################################\n");    
+						       arp->ar_tip[3]);
+ 
+      printf("#############################################\n");
+    
     }
 
     if (ntohs(eth.h_proto) == ETH_P_IP)
     {
       ip = (struct iphdr *)(data + sizeof(struct ethhdr));
-      printf("==IP_HEADER==================================\n");
+
+      printf("==IP_HEADER==================================\n");
       printf("IP version            :%d\n", ip->version);
       printf("IP header length      :%d\n", ip->ihl);
       printf("TOS                   :%d\n", ip->tos);
@@ -155,9 +157,6 @@ PrintHeaders(void *data)
     }
 }
 
-/*-------------------------------------------------------*/
-/* Функция вывода принятых данных в виде дампа hex&ascii */
-/*-------------------------------------------------------*/
 void Dump(void* data, int len)
 {  
   unsigned char *buf = data;
@@ -167,7 +166,8 @@ void Dump(void* data, int len)
   memset(str, 0, 17);
   for (i = 0; i < len; i++)
   {
-    if (poz % 16 == 0) {
+    if (poz % 16 == 0)
+ {
       printf("  %s\n%04X: ", str, poz);
       memset(str, 0, 17);
     }
@@ -182,9 +182,6 @@ void Dump(void* data, int len)
   printf("  %*s\n\n", 16 + (16 - len % 16) * 2, str);
 }
 
-/*------------------------*/
-/* Главная функция main() */
-/*------------------------*/
 int main(int argc, char* argv[])
 {
   int sd;
@@ -194,7 +191,7 @@ int main(int argc, char* argv[])
   char buf[1500];
 
   fprintf(stderr, "===================================================\n");  
-  fprintf(stderr, "= Simple passive sniffer by Ivan Sklyaroff, 2006. =\n");
+  fprintf(stderr, "= Simple passive sniffer by Denis Balebanov 2015. =\n");
   fprintf(stderr, "=    [-d] - dump a block of data in hex&ascii.    =\n");
   fprintf(stderr, "===================================================\n");
 
@@ -203,7 +200,6 @@ int main(int argc, char* argv[])
     exit(-1);
   }
 
-  /* переводим интерфейс в неразборчивый (promiscuous) режим */
   strcpy(ifr.ifr_name, DEVICE);
   if (ioctl(sd, SIOCGIFFLAGS, &ifr) < 0) {
     perror("ioctl() failed");
@@ -219,25 +215,23 @@ int main(int argc, char* argv[])
     exit(-1);
   }
 
-  /* в бесконечном цикле захватываем пакеты */
   while (1)
   {
     n = recvfrom(sd, buf, sizeof(buf), 0, 0, 0);
     printf("#############################################\n");
     printf("Packet #%d (%d bytes read)\n", ++packet, n);
     
-    PrintHeaders(buf); /* выводим поля заголовков принятых пакетов */
+    PrintHeaders(buf); 
     
-    /* если в командной строке указан параметр -d, показываем принятые данные
-    в виде дампа hex&ascii */
     if (argc == 2) {
       if (!strcmp(argv[1], "-d"))
         Dump(buf, n);
     }
   
     printf("\n");  
-  }
+
+  }
 
   return 0;
 }
-
+
