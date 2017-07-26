@@ -72,6 +72,7 @@ int main(){
 	FILE *stream;
 	
 	fd = open("voltage.txt", O_RDWR);
+	// fd = creat("voltage.txt", 0644);
 	if(fd == 1){
 		cerr << "Ошибка открытия файла" << endl;
 		return -1;
