@@ -1,3 +1,6 @@
+/*
+	Эта программа с определенной частотой выборки записывает данные с каналов устройства в .csv-файл
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,39 +29,21 @@ int main(int argc, char **argv){
     struct tm *date;
     struct timeval tval;
     time_t t;
-    //struct in_addr network[3];
     DeviceInfo_E1608 device_info;
     double frequency;
-    //double volts;
     int i, j, k;
-    //uint16_t status;
-    //uint16_t value;
     uint16_t dataIn[512];
-    //uint32_t counter;
     uint32_t count;
-    //int flag;
-    //int ch;
     int corrected_data;
 
     uint8_t options;
-    //uint8_t input;
     uint8_t channel;
     uint8_t range;
-    uint8_t nchan;
-    //int temp;
-
-/*	FILE *ptrFile = fopen("files/_values.ods", "w");
-	if(ptrFile == NULL){
-		printf("Error opening file!");
-		return -1;
-	}
-*/	
+    uint8_t nchan;	
 	
 	std::ofstream myFile;
 	myFile.open("files/1_new_values.csv");
-	myFile << "Test\n";
-	//myFile.close();
-	
+	myFile << "Test\n";	
 
     if (argc == 2) {
         printf("E-1608 IP адрес = %s\n", argv[1]);
@@ -101,7 +86,6 @@ int main(int argc, char **argv){
 	   i, device_info.table_AOut[i].slope, device_info.table_AOut[i].intercept);
     }
 */
-    //printf("Testing E-1608 Analog Input Scan.\n");
     AInScanStop_E1608(&device_info, 0);  //Stop the scan if running.
     printf("Введите частоту дискретизации [Гц]: ");
     scanf("%lf", &frequency);
@@ -117,7 +101,7 @@ int main(int argc, char **argv){
         printf("Число каналов должно быть от 1 до 8\n");
         return -1;
     }
-		// set up the gain queue
+	// set up the gain queue
     device_info.queue[0] = nchan;
 	for (i = 0; i < nchan; i++) {
 		printf("Введите %d канал в очереди усиления [0-11]: ", i+1);
@@ -159,11 +143,6 @@ int main(int argc, char **argv){
             }
             //printf("Range %d Channel %d  Sample[%d] = %#x Volts = %lf\n", range, channel,
                 //k, corrected_data, volts_E1608(corrected_data, range));
-/*            if(writeData("values.txt", volts_E1608(corrected_data, range)) == false){
-                printf("Ошибка writeData\n");
-                return -1;
-            }
-*/
             printf("Диапазон %d Канал %d  Выборка %d Напряжение = %lf\n", range, channel, k+1, volts_E1608(corrected_data, range));
 
 			array[j][i] = volts_E1608(corrected_data, range);
@@ -171,15 +150,8 @@ int main(int argc, char **argv){
         printf("\n");
     }
     
-/*    t = time(NULL);
-    date = localtime(&t);
-    printf("Time: %s\n", asctime(date));
-*/    
-
-    
     myFile << "\n\n";
-    //myFile << "Time: " << date->tm_hour << ":" << date->tm_min << ":" << date->tm_sec << "." << tval.tv_usec << ";\n\n";
-    
+    //myFile << "Time: " << date->tm_hour << ":" << date->tm_min << ":" << date->tm_sec << "." << tval.tv_usec << ";\n\n";    
     myFile << "Time;";
     
     for(i = 0; i < nchan; i++){
@@ -192,15 +164,9 @@ int main(int argc, char **argv){
 		date = gmtime((time_t*)&tval.tv_sec);
 		myFile << date->tm_hour << ":" << date->tm_min << ":" << date->tm_sec << "." << tval.tv_usec << ";";
 		for(j = 0; j < nchan; j++){
-/*			char buf[10];
-			sprintf(buf, "%f;", array[j][i]);
-			fputs(buf, ptrFile);
-			fseek(ptrFile, 0, SEEK_END);
-*/	
-
 			myFile << array[j][i] << ";";
 		}
-			myFile << "\n";
+		myFile << "\n";
 			
 	}
 }
