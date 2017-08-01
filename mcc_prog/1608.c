@@ -19,16 +19,26 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include <fcntl.h>
 #include <math.h>
 #include <ctype.h>
 #include <time.h>
 
+const std::string currentTime(){
+	char fmt[64], buf[64];
+	struct timeval tv;
+	struct tm *tm;
+	
+	gettimeofday(&tv, NULL);
+	tm = localtime(&tv.tv_sec);
+	strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%06u", tm);
+	snprintf(buf, sizeof(buf), fmt, tv.tv_usec);
+	return buf;
+}
+
 int main(int argc, char **argv){
-    struct tm *date;
-    struct timeval tval;
-    time_t t;
     DeviceInfo_E1608 device_info;
     double frequency;
     int i, j, k;
@@ -39,12 +49,14 @@ int main(int argc, char **argv){
     uint8_t options;
     uint8_t channel;
     uint8_t range;
-    uint8_t nchan;	
-	
-	std::ofstream myFile;
-	myFile.open("files/1_new_values.csv");
-	myFile << "Test\n";	
+    uint8_t nchan;
+    std::ofstream myFile;
 
+	std::cout << currentTime() << std::endl;
+	
+	myFile.open("files/1_new_values.csv");
+	myFile << "Test\n";
+	
     if (argc == 2) {
         printf("E-1608 IP адрес = %s\n", argv[1]);
         device_info.device.Address.sin_family = AF_INET;
@@ -86,8 +98,9 @@ int main(int argc, char **argv){
 	   i, device_info.table_AOut[i].slope, device_info.table_AOut[i].intercept);
     }
 */
+
     AInScanStop_E1608(&device_info, 0);  //Stop the scan if running.
-    printf("Введите частоту дискретизации [Гц]: ");
+    printf("Введите частоту дискретизации (250 kHz max) [Гц]: ");
     scanf("%lf", &frequency);
     printf("Число выборок < 512 : ");
     scanf("%d", &count);
@@ -101,7 +114,7 @@ int main(int argc, char **argv){
         printf("Число каналов должно быть от 1 до 8\n");
         return -1;
     }
-	// set up the gain queue
+		// set up the gain queue
     device_info.queue[0] = nchan;
 	for (i = 0; i < nchan; i++) {
 		printf("Введите %d канал в очереди усиления [0-11]: ", i+1);
@@ -124,9 +137,11 @@ int main(int argc, char **argv){
     AInScanRead_E1608(&device_info, count, nchan, dataIn);
     close(device_info.device.scan_sock);
 
-    double array[nchan][count];
+    //double arr_samples[nchan][count];
+    std::string arr_data[nchan+1][count];
 
     for (i = 0; i < count; i++) {    // scan count
+		//myFile << currentTime() << ";";
         for (j = 0; j < nchan; j++) {   // channel count
             k = i*nchan + j;  // sample number
             channel = device_info.queue[2*j+1];  // channel
@@ -144,14 +159,19 @@ int main(int argc, char **argv){
             //printf("Range %d Channel %d  Sample[%d] = %#x Volts = %lf\n", range, channel,
                 //k, corrected_data, volts_E1608(corrected_data, range));
             printf("Диапазон %d Канал %d  Выборка %d Напряжение = %lf\n", range, channel, k+1, volts_E1608(corrected_data, range));
-
-			array[j][i] = volts_E1608(corrected_data, range);
+            
+			//arr_samples[j][i] = volts_E1608(corrected_data, range);
+			std::string str_volts = std::to_string(volts_E1608(corrected_data, range));
+			arr_data[0][i] = currentTime();
+			arr_data[j+1][i] = str_volts;
+        
+			
         }
+        myFile << "\n";
         printf("\n");
     }
     
-    myFile << "\n\n";
-    //myFile << "Time: " << date->tm_hour << ":" << date->tm_min << ":" << date->tm_sec << "." << tval.tv_usec << ";\n\n";    
+    myFile << "\n\n";    
     myFile << "Time;";
     
     for(i = 0; i < nchan; i++){
@@ -160,13 +180,13 @@ int main(int argc, char **argv){
 	myFile << "\n";
     
     for(i = 0; i < count; i++){
-		gettimeofday(&tval, 0);
-		date = gmtime((time_t*)&tval.tv_sec);
-		myFile << date->tm_hour << ":" << date->tm_min << ":" << date->tm_sec << "." << tval.tv_usec << ";";
+		myFile << arr_data[0][i] << ";";
 		for(j = 0; j < nchan; j++){
-			myFile << array[j][i] << ";";
+			myFile << arr_data[j+1][i] << ";";
 		}
-		myFile << "\n";
-			
+			myFile << "\n";			
 	}
+	
+	myFile.close();
+	return 0;
 }
