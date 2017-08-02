@@ -1,6 +1,3 @@
-/*
-	Эта программа с определенной частотой выборки записывает данные с каналов устройства в .csv-файл
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -57,16 +54,7 @@ int main(int argc, char **argv){
 	myFile.open("files/1_new_values.csv");
 	myFile << "Test\n";
 	
-    if (argc == 2) {
-        printf("E-1608 IP адрес = %s\n", argv[1]);
-        device_info.device.Address.sin_family = AF_INET;
-        device_info.device.Address.sin_port = htons(COMMAND_PORT);
-        device_info.device.Address.sin_addr.s_addr = INADDR_ANY;
-        if (inet_aton(argv[1], &device_info.device.Address.sin_addr) == 0) {
-            printf("Неверный адрес\n");
-            return -1;
-        }
-    } else if (discoverDevice(&device_info.device, E1608_PID) <= 0) {
+	if (discoverDevice(&device_info.device, E1608_PID) <= 0) {
         printf("Устройство не найдено\n");
         return -1;
     }
@@ -90,12 +78,6 @@ int main(int argc, char **argv){
     for (i = 0; i < NGAINS; i++) {
         printf("Calibration Table (Single Ended): Range = %d Slope = %f  Intercept = %f\n",
 	   i, device_info.table_AInSE[i].slope, device_info.table_AInSE[i].intercept);
-    }
-*/
-    buildGainTableAOut_E1608(&device_info);
-/*    for (i = 0; i < NCHAN_AOUT; i++) {
-        printf("Calibration Table Analog Output: Channel = %d Slope = %f  Intercept = %f\n",
-	   i, device_info.table_AOut[i].slope, device_info.table_AOut[i].intercept);
     }
 */
 
@@ -137,11 +119,9 @@ int main(int argc, char **argv){
     AInScanRead_E1608(&device_info, count, nchan, dataIn);
     close(device_info.device.scan_sock);
 
-    //double arr_samples[nchan][count];
     std::string arr_data[nchan+1][count];
 
     for (i = 0; i < count; i++) {    // scan count
-		//myFile << currentTime() << ";";
         for (j = 0; j < nchan; j++) {   // channel count
             k = i*nchan + j;  // sample number
             channel = device_info.queue[2*j+1];  // channel
@@ -156,18 +136,12 @@ int main(int argc, char **argv){
             } else if (corrected_data < 0) {
                 corrected_data = 0;
             }
-            //printf("Range %d Channel %d  Sample[%d] = %#x Volts = %lf\n", range, channel,
-                //k, corrected_data, volts_E1608(corrected_data, range));
             printf("Диапазон %d Канал %d  Выборка %d Напряжение = %lf\n", range, channel, k+1, volts_E1608(corrected_data, range));
             
-			//arr_samples[j][i] = volts_E1608(corrected_data, range);
 			std::string str_volts = std::to_string(volts_E1608(corrected_data, range));
 			arr_data[0][i] = currentTime();
-			arr_data[j+1][i] = str_volts;
-        
-			
+			arr_data[j+1][i] = str_volts;						
         }
-        myFile << "\n";
         printf("\n");
     }
     
