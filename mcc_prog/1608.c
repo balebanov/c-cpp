@@ -71,6 +71,7 @@ int main(int argc, char **argv){
     }
 
     buildGainTableAIn_E1608(&device_info);
+	//вывод калибровочной информации	
 /*    for (i = 0; i < NGAINS; i++) {
         printf("Calibration Table (Differential): Range = %d Slope = %f  Intercept = %f\n",
 	   i, device_info.table_AInDF[i].slope, device_info.table_AInDF[i].intercept);
@@ -96,7 +97,7 @@ int main(int argc, char **argv){
         printf("Число каналов должно быть от 1 до 8\n");
         return -1;
     }
-		// set up the gain queue
+	//таблица усиления
     device_info.queue[0] = nchan;
 	for (i = 0; i < nchan; i++) {
 		printf("Введите %d канал в очереди усиления [0-11]: ", i+1);
@@ -121,18 +122,18 @@ int main(int argc, char **argv){
 
     std::string arr_data[nchan+1][count];
 
-    for (i = 0; i < count; i++) {    // scan count
-        for (j = 0; j < nchan; j++) {   // channel count
-            k = i*nchan + j;  // sample number
-            channel = device_info.queue[2*j+1];  // channel
-            range = device_info.queue[2*j+2];    // range value
-            if (channel < DF) {  // single ended
+    for (i = 0; i < count; i++) {    // выборка
+        for (j = 0; j < nchan; j++) {   // канал
+            k = i*nchan + j;  //номер выборки
+            channel = device_info.queue[2*j+1];  
+            range = device_info.queue[2*j+2];  
+            if (channel < DF) {  
                 corrected_data = rint(dataIn[k]*device_info.table_AInSE[range].slope + device_info.table_AInSE[range].intercept);
-            } else {  // differential
+            } else {  
                 corrected_data = rint(dataIn[k]*device_info.table_AInDF[range].slope + device_info.table_AInDF[range].intercept);
             }
             if (corrected_data > 65536) {
-                corrected_data = 65535;  // max value
+                corrected_data = 65535;
             } else if (corrected_data < 0) {
                 corrected_data = 0;
             }
