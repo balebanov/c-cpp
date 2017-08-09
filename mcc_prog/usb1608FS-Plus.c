@@ -1,21 +1,3 @@
-/*
- *
- *  Copyright (c) 2014 Warren J. Jasper <wjasper@tx.ncsu.edu>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*/
-
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -83,17 +65,17 @@ int main (int argc, char **argv)
   }
 
   if ((udev = usb_device_find_USB_MCC(USB1608FS_PLUS_PID, NULL))) {
-    printf("Success, found a USB 1608FS-Plus!\n");
+  	printf("Success, found a USB 1608FS-Plus!\n");
   } else {
-    printf("Failure, did not find a USB 1608FS-Plus!\n");
-    return 0;
+  	printf("Failure, did not find a USB 1608FS-Plus!\n");
+  	return 0;
   }
 
   // some initialization
   //print out the wMaxPacketSize.  Should be 64.
-  printf("wMaxPacketSize = %d\n", usb_get_max_packet_size(udev,0));
+ printf("wMaxPacketSize = %d\n", usb_get_max_packet_size(udev,0));
 
-  usbBuildGainTable_USB1608FS_Plus(udev, table_AIN);
+ usbBuildGainTable_USB1608FS_Plus(udev, table_AIN);
 /*  for (i = 0; i < NGAINS_USB1608FS_PLUS; i++ ) {
     for (j = 0; j < NCHAN_USB1608FS_PLUS; j++) {
       printf("Calibration Table: Range = %d Channel = %d Slope = %f   Offset = %f\n", 
@@ -101,22 +83,22 @@ int main (int argc, char **argv)
     }
   }
 */
-        printf("Testing USB-1608FS_Plus Mult-Channel Analog Input Scan.\n");
-        usbAInScanStop_USB1608FS_Plus(udev);
-        printf("enter number of channels (1-8) :");
-        scanf("%d", &nchan);
-        printf("Enter number of scans (less than 512): ");
-        scanf("%d", &count);
-        printf("Enter sampling frequency (100 KHz max): ");
-        scanf("%lf", &frequency);
-        // Build bitmap for the first nchan in channels.
-        channels = 0;
-        file << "Date;";
-        for (i = 0; i < nchan; i++) {
-			channels |= (1 << i);
-			file << "Channel" << i << ";";
-		}
-		file << "\n";
+ 	printf("Testing USB-1608FS_Plus Mult-Channel Analog Input Scan.\n");
+	usbAInScanStop_USB1608FS_Plus(udev);
+	printf("enter number of channels (1-8) :");
+	scanf("%d", &nchan);
+	printf("Enter number of scans (less than 512): ");
+    scanf("%d", &count);
+    printf("Enter sampling frequency (100 KHz max): ");
+    scanf("%lf", &frequency);
+    // Build bitmap for the first nchan in channels.
+    channels = 0;
+    file << "Date;";
+    for (i = 0; i < nchan; i++) {
+		channels |= (1 << i);
+		file << "Channel" << i << ";";
+	}
+	file << "\n";
         printf ("channels: %02X   count:%d\n", channels, count);
         // Always use BP_10V to make it easy (BP_10V is 0...)
         range = 0;
@@ -158,4 +140,3 @@ int main (int argc, char **argv)
 
 	return 0;
 }
-
