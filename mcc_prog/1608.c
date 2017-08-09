@@ -1,3 +1,6 @@
+/*
+	Программа для работы с устройством MCC E-1608. Запись данных с аналоговых входов в файл
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
