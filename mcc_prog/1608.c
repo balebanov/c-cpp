@@ -50,12 +50,22 @@ int main(int argc, char **argv){
     uint8_t channel;
     uint8_t range;
     uint8_t nchan;
+    
     std::ofstream myFile;
+    std::ofstream web, newWeb;
 
 	std::cout << currentTime() << std::endl;
 	
+	web.open("files/text.txt");
 	myFile.open("files/1_new_values.csv");
 	myFile << "Test\n";
+	
+	if(!web.is_open()){
+		//web << "Open!";
+		std::cout << "File doesn't open" << std::endl;
+		return 0;
+	}
+	//web << "Test\n";
 	
 	if (discoverDevice(&device_info.device, E1608_PID) <= 0) {
         printf("Устройство не найдено\n");
@@ -74,8 +84,7 @@ int main(int argc, char **argv){
     }
 
     buildGainTableAIn_E1608(&device_info);
-	//вывод калибровочной информации	
-/*    for (i = 0; i < NGAINS; i++) {
+    for (i = 0; i < NGAINS; i++) {
         printf("Calibration Table (Differential): Range = %d Slope = %f  Intercept = %f\n",
 	   i, device_info.table_AInDF[i].slope, device_info.table_AInDF[i].intercept);
     }
@@ -83,7 +92,6 @@ int main(int argc, char **argv){
         printf("Calibration Table (Single Ended): Range = %d Slope = %f  Intercept = %f\n",
 	   i, device_info.table_AInSE[i].slope, device_info.table_AInSE[i].intercept);
     }
-*/
 
     AInScanStop_E1608(&device_info, 0);  //Stop the scan if running.
     printf("Введите частоту дискретизации (250 kHz max) [Гц]: ");
@@ -100,7 +108,7 @@ int main(int argc, char **argv){
         printf("Число каналов должно быть от 1 до 8\n");
         return -1;
     }
-	//таблица усиления
+		// set up the gain queue
     device_info.queue[0] = nchan;
 	for (i = 0; i < nchan; i++) {
 		printf("Введите %d канал в очереди усиления [0-11]: ", i+1);
@@ -125,18 +133,18 @@ int main(int argc, char **argv){
 
     std::string arr_data[nchan+1][count];
 
-    for (i = 0; i < count; i++) {    // выборка
-        for (j = 0; j < nchan; j++) {   // канал
-            k = i*nchan + j;  //номер выборки
-            channel = device_info.queue[2*j+1];  
-            range = device_info.queue[2*j+2];  
-            if (channel < DF) {  
+    for (i = 0; i < count; i++) {    // scan count
+        for (j = 0; j < nchan; j++) {   // channel count
+            k = i*nchan + j;  // sample number
+            channel = device_info.queue[2*j+1];  // channel
+            range = device_info.queue[2*j+2];    // range value
+            if (channel < DF) {  // single ended
                 corrected_data = rint(dataIn[k]*device_info.table_AInSE[range].slope + device_info.table_AInSE[range].intercept);
-            } else {  
+            } else {  // differential
                 corrected_data = rint(dataIn[k]*device_info.table_AInDF[range].slope + device_info.table_AInDF[range].intercept);
             }
             if (corrected_data > 65536) {
-                corrected_data = 65535;
+                corrected_data = 65535;  // max value
             } else if (corrected_data < 0) {
                 corrected_data = 0;
             }
@@ -144,13 +152,14 @@ int main(int argc, char **argv){
             
 			std::string str_volts = std::to_string(volts_E1608(corrected_data, range));
 			arr_data[0][i] = currentTime();
-			arr_data[j+1][i] = str_volts;						
+			arr_data[j+1][i] = str_volts;					
         }
         printf("\n");
     }
     
     myFile << "\n\n";    
     myFile << "Time;";
+    web.close();
     
     for(i = 0; i < nchan; i++){
 		myFile << "Channel " << i+1 << ";";
@@ -159,12 +168,15 @@ int main(int argc, char **argv){
     
     for(i = 0; i < count; i++){
 		myFile << arr_data[0][i] << ";";
+		newWeb.open("files/text.txt", std::ios_base::out | std::ios_base::trunc);
 		for(j = 0; j < nchan; j++){
-			myFile << arr_data[j+1][i] << ";";
+			myFile << arr_data[j+1][i] << ";";		
+			newWeb << arr_data[j+1][i] << ";";
 		}
 			myFile << "\n";			
 	}
 	
 	myFile.close();
+	close(device_info.device.sock);
 	return 0;
 }
